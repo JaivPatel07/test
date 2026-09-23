@@ -32,7 +32,7 @@ Rainfall / weather / soil moisture / terrain / river gauges / history / field re
 
 ## Production service boundary
 
-The UI uses deterministic mock data in `app.js` for the no-credential preview, and this repository now also includes a dependency-free `server.js` demo API. The demo API supports location/risk reads, login/register/logout, alerts, incidents, shelters, data health, model registry, reports and validated sensor ingestion. It is intentionally in-memory so the prototype remains portable; production should replace the stores with PostgreSQL/PostGIS and a managed identity provider. In production, the UI should call a versioned API using relative URLs:
+The UI uses deterministic mock data in `frontend/src/main.jsx` for the no-credential preview and calls the Django API through the Vite proxy. The backend supports location/risk reads, JWT login, alerts, incidents, shelters, data health, model registry, reports and validated sensor ingestion. SQLite is the local development database; production should replace it with PostgreSQL/PostGIS and a managed identity provider. In production, the UI should call a versioned API using relative URLs:
 
 ```text
 GET  /api/v1/locations?query=...
@@ -66,7 +66,7 @@ The sensor gateway must validate sensor identity, timestamp, coordinates, units 
 
 ### Local demo API
 
-Run `node server.js` and open port 4173. The seeded officer account is `riya@aegisterrain.in` with password `demo123`; this credential is only for the local prototype and must be removed before deployment. Sensor ingestion requires a bearer token returned by the demo login endpoint.
+Run the Django service with `python manage.py runserver 0.0.0.0:8000`, then run the React app in `frontend` with `npm run dev`. The seeded officer account is `riya@aegisterrain.in` with password `demo123`; this credential is only for the local prototype and must be removed before deployment. Sensor ingestion requires a JWT bearer token returned by `/api/token/`.
 
 ## Safety and model governance
 
