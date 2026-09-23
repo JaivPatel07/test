@@ -32,7 +32,7 @@ Rainfall / weather / soil moisture / terrain / river gauges / history / field re
 
 ## Production service boundary
 
-The current UI uses deterministic mock data in `app.js` so it can be previewed without credentials, a database, or physical sensors. In production, the UI should call a versioned API using relative URLs:
+The UI uses deterministic mock data in `app.js` for the no-credential preview, and this repository now also includes a dependency-free `server.js` demo API. The demo API supports location/risk reads, login/register/logout, alerts, incidents, shelters, data health, model registry, reports and validated sensor ingestion. It is intentionally in-memory so the prototype remains portable; production should replace the stores with PostgreSQL/PostGIS and a managed identity provider. In production, the UI should call a versioned API using relative URLs:
 
 ```text
 GET  /api/v1/locations?query=...
@@ -63,6 +63,10 @@ Recommended implementation:
 The backend should keep separate tables for `User`, `Role`, `Location`, `Village`, `Ward`, `RainfallRecord`, `SoilMoistureRecord`, `WeatherRecord`, `TerrainData`, `HistoricalDisaster`, `Prediction`, `RiskScore`, `Alert`, `Incident`, `Shelter`, `EvacuationPlan`, `ResponseTeam`, `EmergencyResource`, `Sensor`, `SensorReading`, `Notification`, `AuditLog`, `ModelVersion` and `DataSource`.
 
 The sensor gateway must validate sensor identity, timestamp, coordinates, units and range before a reading can enter the feature store. Stale or quarantined feeds must be visible in Data Health and must not silently trigger escalation.
+
+### Local demo API
+
+Run `node server.js` and open port 4173. The seeded officer account is `riya@aegisterrain.in` with password `demo123`; this credential is only for the local prototype and must be removed before deployment. Sensor ingestion requires a bearer token returned by the demo login endpoint.
 
 ## Safety and model governance
 

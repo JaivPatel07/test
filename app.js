@@ -160,6 +160,7 @@ document.addEventListener('click', (event) => {
   if (action === 'toggle') { actionEl.classList.toggle('on'); return; }
   if (action === 'reset-sim') { state.simRain = 68; state.simMoisture = 78; render(); toast('Scenario reset', 'Live baseline values restored.'); return; }
   if (action === 'save-sim') { toast('Scenario saved', 'Scenario KGS-0923 is available in the simulation history.'); return; }
+  if (action === 'download' || action === 'export-incidents') { downloadCsv(action === 'export-incidents' ? 'aegis-incident-reports.csv' : 'aegis-district-report.csv', action === 'export-incidents' ? [['Incident','Location','Severity','Status'],['Landslide reported','Karsog · Ward 08','HIGH','Unverified'],['Bridge approach damaged','Thunag · Ward 03','HIGH','Verified']] : [['Location','Risk','Landslide probability','Flash-flood probability','Lead time'],...villages.map(v=>[v.name,v.risk+' / 100',v.risk+'%',Math.max(12,v.risk-5)+'%',v.lead])]); toast('Download ready', 'The requested CSV report was downloaded.'); return; }
   if (action === 'report' || action === 'download' || action === 'export-incidents' || action === 'upload-history' || action === 'assign' || action === 'route-plan' || action === 'new-plan' || action === 'road-status' || action === 'shelter-list' || action === 'resource-settings' || action === 'add-resource' || action === 'resource-detail' || action === 'sources' || action === 'validation-log' || action === 'model-compare' || action === 'retrain' || action === 'alert-rules' || action === 'layers' || action === 'contacts' || action === 'notification-settings' || action === 'add-sensor' || action === 'source-detail' || action === 'invite-user' || action === 'user-detail') {
     toast('Action ready', 'This workflow is connected to the operational API in the production architecture.'); return;
   }
@@ -241,3 +242,23 @@ document.addEventListener('input', event => {
     row.hidden = query && !row.textContent.toLowerCase().includes(query);
   });
 });
+
+function downloadCsv(filename, rows) {
+  const csv = rows.map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a'); link.href=url; link.download=filename; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function syncApiHealth() {
+  const pill = document.querySelector('.system-pill');
+  try {
+    const response = await fetch('/api/health');
+    if (!response.ok) throw new Error('API unavailable');
+    const payload = await response.json();
+    if (pill && payload.data?.status === 'operational') pill.innerHTML = '<span class="dot"></span>API connected';
+  } catch {
+    if (pill) pill.innerHTML = '<span class="dot amber"></span>Demo mode';
+  }
+}
+syncApiHealth();
